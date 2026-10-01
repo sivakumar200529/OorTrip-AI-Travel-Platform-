@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,18 +54,25 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Serve frontend static build in production
-const clientDistPath = path.resolve(__dirname, '../../client/dist');
+const possiblePaths = [
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(__dirname, '../client/dist')
+];
+const clientDistPath = possiblePaths.find(p => fs.existsSync(p)) || possiblePaths[0];
+
 app.use(express.static(clientDistPath));
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
-  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
-    if (err) {
-      res.status(200).send('OorTrip AI Backend Server Running.');
-    }
-  });
+  const indexPath = path.join(clientDistPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return res.status(200).send('OorTrip AI Backend API Server Running. Build the client to view the web app.');
 });
 
 app.listen(PORT, () => {
