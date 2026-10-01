@@ -1,0 +1,262 @@
+// OorTrip AI - Prisma Schema
+// Supports SQLite (default for instant zero-friction prototype setup)
+// and PostgreSQL (set provider = "postgresql" in DATABASE_URL for cloud production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           String          @default("tourist") // tourist, business, admin
+  avatar         String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  touristProfile TouristProfile?
+  business       Business?
+  itineraries    Itinerary[]
+  reviews        Review[]
+  expenses       Expense[]
+  bookings       Booking[]
+  favorites      Favorite[]
+  notifications  Notification[]
+  conversations  AIConversation[]
+}
+
+model TouristProfile {
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points       Int          @default(0)
+  ecoScore     Int          @default(80)
+  tier         String       @default("Explorer") // Explorer, Traveler, Discoverer, Tamil Nadu Champion
+  touristPass  TouristPass?
+}
+
+model TouristPass {
+  id           String         @id @default(uuid())
+  profileId    String         @unique
+  profile      TouristProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  passNumber   String         @unique
+  issuedAt     DateTime       @default(now())
+  visitedCount Int            @default(0)
+  badges       Badge[]
+}
+
+model Badge {
+  id           String        @id @default(uuid())
+  passId       String?
+  pass         TouristPass?  @relation(fields: [passId], references: [id])
+  name         String
+  description  String
+  icon         String
+  points       Int           @default(100)
+  unlockedAt   DateTime?
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  icon         String?
+  destinations Destination[]
+}
+
+model Destination {
+  id           String        @id @default(uuid())
+  name         String
+  tamilName    String
+  tagline      String
+  description  String
+  location     String
+  district     String
+  categoryId   String?
+  categoryRel  Category?     @relation(fields: [categoryId], references: [id])
+  category     String        @default("Heritage")
+  rating       Float         @default(4.8)
+  reviewCount  Int           @default(0)
+  image        String
+  latitude     Float
+  longitude    Float
+  bestTime     String
+  entryFee     Float         @default(0)
+  duration     String        @default("2-3 hours")
+  estimatedCost Float        @default(500)
+  crowdLevel   String        @default("MEDIUM") // LOW, MEDIUM, HIGH
+  history      String
+  architecture String
+  culturalSignificance String
+  audioGuideText String
+  createdAt    DateTime      @default(now())
+
+  reviews      Review[]
+  favorites    Favorite[]
+  itineraryItems ItineraryItem[]
+}
+
+model Itinerary {
+  id                 String          @id @default(uuid())
+  userId             String?
+  user               User?           @relation(fields: [userId], references: [id])
+  title              String
+  startingLocation   String
+  destination        String
+  daysCount          Int             @default(2)
+  budget             Float           @default(5000)
+  totalEstimatedCost Float           @default(3420)
+  interests          String          // JSON array string
+  travelGroup        String          @default("Solo")
+  transportPreference String         @default("Car")
+  foodPreference     String          @default("Vegetarian")
+  accessibility      String          @default("Senior Friendly")
+  createdAt          DateTime        @default(now())
+
+  items              ItineraryItem[]
+}
+
+model ItineraryItem {
+  id            String       @id @default(uuid())
+  itineraryId   String
+  itinerary     Itinerary    @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  dayNumber     Int          @default(1)
+  timeSlot      String
+  title         String
+  description   String
+  cost          Float        @default(0)
+  isAlternative Boolean      @default(false)
+}
+
+model Business {
+  id          String        @id @default(uuid())
+  userId      String        @unique
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  craftType   String?
+  district    String
+  verified    Boolean       @default(true)
+  revenue     Float         @default(0)
+  createdAt   DateTime      @default(now())
+
+  experiences Experience[]
+  products    Product[]
+}
+
+model Experience {
+  id          String     @id @default(uuid())
+  businessId  String?
+  business    Business?  @relation(fields: [businessId], references: [id])
+  title       String
+  tamilTitle  String?
+  category    String     // Traditional Cooking, Handicrafts, Farm Experiences, Village Tours
+  location    String
+  district    String
+  hostName    String
+  price       Float
+  duration    String
+  rating      Float      @default(4.9)
+  image       String
+  description String
+  maxGuests   Int        @default(10)
+  createdAt   DateTime   @default(now())
+
+  bookings    Booking[]
+}
+
+model Booking {
+  id           String      @id @default(uuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  experienceId String
+  experience   Experience  @relation(fields: [experienceId], references: [id])
+  guestCount   Int         @default(1)
+  totalAmount  Float
+  date         DateTime
+  status       String      @default("CONFIRMED") // CONFIRMED, COMPLETED, CANCELLED
+  createdAt    DateTime    @default(now())
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id])
+  title       String
+  price       Float
+  image       String
+  description String
+  material    String?
+  createdAt   DateTime  @default(now())
+}
+
+model Review {
+  id            String       @id @default(uuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  destinationId String
+  destination   Destination  @relation(fields: [destinationId], references: [id])
+  rating        Int          @default(5)
+  comment       String
+  sentiment     String       @default("positive") // positive, neutral, issue
+  createdAt     DateTime     @default(now())
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  category  String   // Transport, Food, Stay, Tickets, Shopping, Activities
+  amount    Float
+  date      DateTime @default(now())
+  notes     String?
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // trip, weather, crowd, budget, recommendation
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  location    String
+  district    String
+  startDate   DateTime
+  endDate     DateTime
+  description String
+}
+
+model Favorite {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@unique([userId, destinationId])
+}
+
+model AIConversation {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  prompt    String
+  response  String
+  createdAt DateTime @default(now())
+}

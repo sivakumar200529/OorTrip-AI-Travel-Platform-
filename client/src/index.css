@@ -1,0 +1,117 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* 3D Perspective & Depth System */
+.perspective-container {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.depth-layer-back {
+  transform: translateZ(-60px) scale(0.92);
+}
+
+.depth-layer-mid {
+  transform: translateZ(0px);
+}
+
+.depth-layer-front {
+  transform: translateZ(50px) scale(1.03);
+}
+
+.tilt-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.tilt-card:hover {
+  transform: translateY(-8px) rotateX(4deg) rotateY(-2deg) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(211, 91, 45, 0.15);
+}
+
+/* Hero Parallax Floating Cards */
+.hero-card-main {
+  transform: translateZ(40px);
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.hero-card-back-left {
+  transform: translate3d(-60px, 30px, -40px) rotate(-6deg);
+  opacity: 0.85;
+}
+
+.hero-card-back-right {
+  transform: translate3d(60px, -20px, -30px) rotate(5deg);
+  opacity: 0.88;
+}
+
+/* Cinematic Image Treatments */
+.cinematic-img {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+}
+
+.group:hover .cinematic-img {
+  transform: scale(1.08);
+}
+
+/* Glass Highlights */
+.glass-panel {
+  background: rgba(23, 27, 33, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-pill {
+  background: rgba(30, 35, 43, 0.65);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0D10;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A313C;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D35B2D;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .tilt-card:hover {
+    transform: none !important;
+  }
+}
