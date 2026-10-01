@@ -8,7 +8,6 @@
     "server": "npm --prefix server run dev",
     "client": "npm --prefix client run dev",
     "install:all": "npm install && npm --prefix server install && npm --prefix client install",
-    "postinstall": "npm --prefix client install",
     "build": "npm --prefix client run build",
     "start": "npx tsx server/src/index.ts",
     "prisma:generate": "npm --prefix server run prisma:generate",
